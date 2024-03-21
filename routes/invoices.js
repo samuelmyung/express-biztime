@@ -24,26 +24,46 @@ router.get("/", async function (req, res) {
  * If invoice cannot be found, throws a 404 error
  */
 router.get("/:id", async function (req, res) {
+  // const result = await db.query(
+  //   `SELECT id, amt, paid, add_date, paid_date, comp_code
+  //     FROM invoices
+  //     WHERE id = $1`, [req.params.id]);
+  // if (result.rows.length === 0) {
+  //   throw new NotFoundError("Invoice doesn't exist");
+  // }
+  // const invoice = result.rows[0];
+
+  // const cResult = await db.query(
+  //   `SELECT code, name, description
+  //     FROM companies
+  //     WHERE code = $1`, [invoice.comp_code]);
+
+  // const company = cResult.rows[0];
+  // invoice.company = company;
+
+  // delete invoice.comp_code;
+
   const result = await db.query(
-    `SELECT id, amt, paid, add_date, paid_date, comp_code
-      FROM invoices
-      WHERE id = $1`, [req.params.id]);
-  if (result.rows.length === 0) {
-    throw new NotFoundError("Invoice doesn't exist");
-  }
+    `SELECT id, amt, paid, add_date, paid_date, code, name, description
+    FROM invoices AS i
+    JOIN companies AS c ON i.comp_code = c.code
+    WHERE i.id = $1`,
+    [req.params.id]
+  );
+
   const invoice = result.rows[0];
 
-  const cResult = await db.query(
-    `SELECT code, name, description
-      FROM companies
-      WHERE code = $1`, [invoice.comp_code]);
+  invoice.company = {
+    code: invoice.code,
+    name: invoice.name,
+    description: invoice.description
+  };
 
-  const company = cResult.rows[0];
-  invoice.company = company;
+  delete invoice.code;
+  delete invoice.name;
+  delete invoice.description;
 
-  delete invoice.comp_code;
-
-  return res.json({ invoice });
+  return res.json({invoice});
 });
 
 
@@ -86,7 +106,7 @@ router.put("/:id", async function (req, res) {
     throw new BadRequestError("Incorrect JSON body passed");
   }
 
-  const { amt } = req.body;
+  const { amt} = req.body;
 
   const result = await db.query(
     `UPDATE invoices
@@ -96,6 +116,7 @@ router.put("/:id", async function (req, res) {
     [amt, req.params.id]);
 
   if (result.rows.length === 0) throw new NotFoundError("Invoice doesn't exist");
+
 
   const invoice = result.rows[0];
 

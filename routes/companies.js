@@ -69,14 +69,6 @@ router.put("/:code", async function (req, res, next) {
     throw new BadRequestError();
   }
 
-  // const companyResult = await db.query(
-  //   `SELECT code, name, description
-  //     FROM companies
-  //     WHERE code = $1`, [req.params.code]);
-  // if (companyResult.rows.length === 0) {
-  //   throw new NotFoundError();
-  // };
-
   const {name, description} = req.body;
   const result = await db.query(
     `UPDATE companies
@@ -98,13 +90,6 @@ router.put("/:code", async function (req, res, next) {
  * Return 404 if company can't be found.
  * Returns {status: "deleted"} */
 router.delete("/:code", async function (req, res, next) {
-  // const companyResult = await db.query(
-  //   `SELECT code, name, description
-  //     FROM companies
-  //     WHERE code = $1`, [req.params.code]);
-  // if (companyResult.rows.length === 0) {
-  //   throw new NotFoundError();
-  // };
 
   const result = await db.query(
     `DELETE FROM companies WHERE code = $1

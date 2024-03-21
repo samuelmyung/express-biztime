@@ -90,7 +90,6 @@ router.put("/:code", async function (req, res, next) {
  * Return 404 if company can't be found.
  * Returns {status: "deleted"} */
 router.delete("/:code", async function (req, res, next) {
-
   const result = await db.query(
     `DELETE FROM companies WHERE code = $1
     RETURNING code`,

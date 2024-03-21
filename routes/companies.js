@@ -33,6 +33,17 @@ router.get("/:code", async function (req, res) {
   if (result.rows.length === 0) throw new NotFoundError();
 
   const company = result.rows[0];
+
+  const invoiceResults = await db.query(
+    `SELECT id
+    FROM invoices
+    WHERE comp_code = $1`,
+    [code]
+  );
+  const invoiceIds = invoiceResults.rows.map(i => i.id);
+
+  company.invoices = invoiceIds;
+
   return res.json({ company });
 });
 

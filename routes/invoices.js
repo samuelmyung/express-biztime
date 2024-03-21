@@ -46,3 +46,71 @@ router.get("/:id", async function(req, res) {
 
   return res.json({invoice});
 });
+
+
+/** POST /invoices: Add an invoice.
+ * Needs to be passed in JSON body of: {comp_code, amt}
+ * Returns: {invoice: {id, comp_code, amt, paid, add_date, paid_date}}
+ */
+router.post("/", async function(req, res) {
+  if (!req.body || req.body.comp_code === undefined
+    || req.body.amt === undefined) {
+      throw new BadRequestError();
+    }
+
+  const {comp_code, amt} = req.body;
+
+  const result = await db.query(
+    `INSERT INTO invoices (comp_code, amt)
+      VALUES ($1, $2)
+      RETURNING id, comp_code, amt, paid, add_date, paid_date`,
+      [comp_code, amt]);
+
+  const invoice = result.rows[0];
+
+  return res.status(201).json({invoice});
+});
+
+
+/** PUT /invoices/:id: Updates an invoice.
+ * If invoice not found, returns 404.
+ * Needs to be passed in JSON body of: {amt}
+ * Returns: {invoice: {id, comp_code, amt, paid, add_date, paid_date}}
+ */
+router.put("/:id", async function(req, res) {
+  if (!req.body || req.body.amt === undefined) {
+      throw new BadRequestError();
+  }
+
+  const {amt} = req.body;
+
+  const result = await db.query(
+    `UPDATE invoices
+      SET amt = $1
+      WHERE code = $2
+      RETURNING id, comp_code, amt, paid, add_date, paid_date`,
+      [amt, req.params.id]);
+
+  if (result.rows.length === 0) throw new NotFoundError();
+
+  const invoice = result.rows[0];
+
+  return res.json({invoice});
+});
+
+
+/** DELETE /invoices: Delete an invoice.
+ * If invoice not found, returns 404.
+ * Returns: {status: "deleted"}
+ */
+router.put("/:id", async function(req, res) {
+  const result = await db.query(
+    `DELETE FROM invoices
+      WHERE code = $1
+      RETURNING id`,
+      [req.params.id]);
+
+  if (result.rows.length === 0) throw new NotFoundError();
+
+  return res.json({status: "deleted"});
+});

@@ -29,11 +29,10 @@ router.get("/:code", async function (req, res) {
     `SELECT code, name, description
       FROM companies
       WHERE code = $1`, [code]);
+
+  if (result.rows.length === 0) throw new NotFoundError();
+
   const company = result.rows[0];
-
-  // TODO: be consistent w check
-  if (company === undefined) throw new NotFoundError();
-
   return res.json({ company });
 });
 

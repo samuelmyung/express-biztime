@@ -19,7 +19,7 @@ router.get("/", async function (req, res) {
 });
 
 /** GET /companies/:code: Get specific company.
- * Return obj of company: {company: {code, name, description}}
+ * Return obj of company: {company: {code, name, description, invoices: [id, ...]}}
  * If the company given cannot be found, return a 404.
  */
 router.get("/:code", async function (req, res) {
@@ -55,7 +55,7 @@ router.post("/", async function (req, res, next) {
     throw new BadRequestError();
   }
 
-  const {code, name, description} = req.body;
+  const { code, name, description } = req.body;
   const result = await db.query(
     `INSERT INTO companies (code, name, description)
       VALUES ($1, $2, $3)
@@ -79,7 +79,7 @@ router.put("/:code", async function (req, res, next) {
     throw new BadRequestError();
   }
 
-  const {name, description} = req.body;
+  const { name, description } = req.body;
   const result = await db.query(
     `UPDATE companies
       SET name = $1,
@@ -108,7 +108,7 @@ router.delete("/:code", async function (req, res, next) {
 
   if (result.rows.length === 0) throw new NotFoundError();
 
-  return res.json({status: "deleted"});
+  return res.json({ status: "deleted" });
 });
 
 
